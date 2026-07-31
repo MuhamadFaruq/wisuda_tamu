@@ -11,7 +11,7 @@ class AdminUserSeeder extends Seeder
     {
         User::updateOrCreate(
             ['email' => 'admin@ush.ac.id'],
-            ['name' => 'Admin Registrasi', 'username' => 'admin', 'password' => 'Admin123!']
+            ['name' => 'Admin Registrasi', 'password' => 'Admin123!']
         );
     }
 }

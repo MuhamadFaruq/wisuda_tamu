@@ -25,7 +25,7 @@ class ExampleTest extends TestCase
     {
         $user = User::factory()->create(['password' => 'secret-admin']);
 
-        $this->post('/login', ['username' => $user->username, 'password' => 'secret-admin'])
+        $this->post('/login', ['email' => $user->email, 'password' => 'secret-admin'])
             ->assertRedirect('/');
 
         $this->get('/')->assertOk();

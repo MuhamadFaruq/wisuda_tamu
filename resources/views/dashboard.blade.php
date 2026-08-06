@@ -83,7 +83,8 @@
     <input type="hidden" id="registeredGuestId" name="registered_guest_id">
     <input type="hidden" id="institutionalGuestId" name="institutional_guest_id">
     <div id="guestLookupMessage" class="lookup-message">Nama dan jenis tamu akan muncul otomatis setelah barcode terbaca.</div>
-    <div class="form-grid"><label>Nama tamu<input id="guestNameInput" name="guest_name" value="{{ old('guest_name') }}" placeholder="Otomatis dari barcode" readonly required></label><label>Jenis tamu<select id="guestTypeInput" name="guest_type" disabled><option value="orang_tua">Orang tua</option><option value="wali">Wali</option><option value="tamu_tambahan">Tamu tambahan</option><option value="tamu_institusi">Tamu institusi</option></select><input type="hidden" id="guestTypeHidden" name="guest_type"></label></div>
+    <div class="form-grid"><label>Nama tamu<input id="guestNameInput" name="guest_name" value="{{ old('guest_name') }}" placeholder="Otomatis dari barcode" readonly required></label><label>Nomor kursi<input id="seatNumberInput" placeholder="Otomatis dari barcode" readonly></label></div>
+    <label>Jenis tamu<select id="guestTypeInput" name="guest_type" disabled><option value="orang_tua">Orang tua</option><option value="wali">Wali</option><option value="tamu_tambahan">Tamu tambahan</option><option value="tamu_institusi">Tamu institusi</option></select><input type="hidden" id="guestTypeHidden" name="guest_type"></label>
     <button class="btn btn-gold full">Konfirmasi check-in →</button>
 </form></dialog>
 

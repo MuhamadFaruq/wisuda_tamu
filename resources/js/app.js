@@ -45,15 +45,17 @@ const lookupGuest = async () => {
         $('#guestNameInput').value = data.guest.full_name;
         $('#guestTypeInput').value = data.guest.guest_type;
         $('#guestTypeHidden').value = data.guest.guest_type;
+        $('#seatNumberInput').value = data.guest.seat_number || '';
         message.textContent = data.kind === 'institutional'
-            ? `${data.guest.full_name} · ${data.position || data.category} · ${data.institution}`
-            : `${data.guest.full_name} · Tamu ${data.student} · Kuota ${data.quota.used}/${data.quota.total}`;
+            ? `${data.guest.full_name} · Kursi ${data.guest.seat_number} · ${data.position || data.category} · ${data.institution}`
+            : `${data.guest.full_name} · Kursi ${data.guest.seat_number} · Tamu ${data.student} · Kuota ${data.quota.used}/${data.quota.total}`;
         message.className = 'lookup-message success';
         $('#guestNameInput').classList.add('auto-filled');
     } catch (error) {
         $('#registeredGuestId').value = '';
         $('#institutionalGuestId').value = '';
         $('#guestNameInput').value = '';
+        $('#seatNumberInput').value = '';
         $('#guestTypeHidden').value = '';
         message.textContent = error.message;
         message.className = 'lookup-message error';

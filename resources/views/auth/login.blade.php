@@ -30,7 +30,7 @@
                 <span class="eyebrow">AKSES PETUGAS</span><h2>Masuk ke akun admin</h2><p>Gunakan akun yang telah terdaftar untuk melanjutkan.</p>
                 @if(session('status'))<div class="login-alert success">{{ session('status') }}</div>@endif
                 @if($errors->any())<div class="login-alert error">{{ $errors->first() }}</div>@endif
-                <label>Email<div class="input-with-icon"><span>@</span><input type="email" name="email" value="{{ old('email') }}" placeholder="admin@ush.ac.id" autocomplete="email" required autofocus></div></label>
+                <label>Email<div class="input-with-icon"><span>@</span><input type="email" name="email" value="{{ old('email') }}" placeholder="Masukkan Email" autocomplete="email" required autofocus></div></label>
                 <label>Kata sandi<div class="input-with-icon"><span>◇</span><input id="password" type="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required><button type="button" id="passwordToggle" aria-label="Tampilkan kata sandi">◎</button></div></label>
                 <label class="remember"><input type="checkbox" name="remember" value="1"> <span>Ingat saya di perangkat ini</span></label>
                 <button class="btn btn-gold full login-submit">Masuk ke dashboard →</button>

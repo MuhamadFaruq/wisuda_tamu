@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InstitutionalGuest;
+use App\Support\SeatNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -28,9 +29,10 @@ class InstitutionalGuestController extends Controller
 
         $next = (InstitutionalGuest::max('id') ?? 0) + 1;
         $data['code'] = 'USH-INS-'.str_pad((string) $next, 5, '0', STR_PAD_LEFT);
+        $data['seat_number'] = SeatNumber::forInstitutionalGuest();
         InstitutionalGuest::create($data);
 
-        return back()->with('success', 'Tamu institusi dan barcode berhasil dibuat.');
+        return back()->with('success', "Tamu institusi dan barcode berhasil dibuat. Nomor kursi: {$data['seat_number']}.");
     }
 
     public function update(Request $request, InstitutionalGuest $institutionalGuest): RedirectResponse

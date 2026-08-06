@@ -7,6 +7,7 @@ use App\Models\Invitation;
 use App\Models\InstitutionalGuest;
 use App\Models\RegisteredGuest;
 use App\Models\Student;
+use App\Support\SeatNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -95,7 +96,7 @@ class AttendanceController extends Controller
             if (! $guest) return back()->withErrors(['code' => 'Barcode tamu institusi tidak valid.'])->withInput();
             if ($guest->checked_in_at) return back()->withErrors(['code' => 'Tamu institusi ini sudah melakukan check-in.'])->withInput();
             $guest->update(['checked_in_at' => now(), 'gate' => 'Pintu Utama']);
-            return back()->with('success', "Check-in {$guest->full_name} dari {$guest->institution} berhasil.");
+            return back()->with('success', "Check-in {$guest->full_name} dari {$guest->institution} berhasil. Nomor kursi: {$guest->seat_number}.");
         }
         $invitation = Invitation::where('code', strtoupper(trim($data['code'])))->first();
         if (! $invitation) return back()->withErrors(['code' => 'Barcode tidak terdaftar.'])->withInput();
@@ -110,7 +111,7 @@ class AttendanceController extends Controller
             $registeredGuest->update(['attended_at' => now()]);
         }
         $invitation->attendances()->create(['registered_guest_id' => $registeredGuest?->id, 'guest_name' => $data['guest_name'], 'guest_type' => $data['guest_type'], 'checked_in_at' => now(), 'gate' => 'Pintu Utama']);
-        return back()->with('success', "Check-in {$data['guest_name']} berhasil.");
+        return back()->with('success', "Check-in {$data['guest_name']} berhasil. Nomor kursi: {$registeredGuest?->seat_number}.");
     }
 
     public function lookup(string $code)
@@ -121,7 +122,7 @@ class AttendanceController extends Controller
             if ($institutionalGuest->checked_in_at) return response()->json(['message' => 'Tamu institusi ini sudah melakukan check-in.'], 422);
             return response()->json([
                 'kind' => 'institutional',
-                'guest' => ['id' => $institutionalGuest->id, 'full_name' => $institutionalGuest->full_name, 'guest_type' => 'tamu_institusi'],
+                'guest' => ['id' => $institutionalGuest->id, 'full_name' => $institutionalGuest->full_name, 'guest_type' => 'tamu_institusi', 'seat_number' => $institutionalGuest->seat_number],
                 'institution' => $institutionalGuest->institution,
                 'position' => $institutionalGuest->position,
                 'category' => $institutionalGuest->category,
@@ -137,7 +138,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'kind' => 'student',
-            'guest' => ['id' => $guest->id, 'full_name' => $guest->full_name, 'guest_type' => $guest->guest_type],
+            'guest' => ['id' => $guest->id, 'full_name' => $guest->full_name, 'guest_type' => $guest->guest_type, 'seat_number' => $guest->seat_number],
             'student' => $invitation->student->name,
             'quota' => ['used' => $invitation->attendances()->count(), 'total' => $invitation->total_quota],
         ]);
@@ -152,8 +153,9 @@ class AttendanceController extends Controller
         if ($data['guest_type'] === 'tamu_tambahan' && $invitation->extra_quota < 1) {
             return back()->withErrors(['guest' => 'Tambahkan paket kuota sebelum mendaftarkan tamu tambahan.']);
         }
+        $data['seat_number'] = SeatNumber::forRegisteredGuest($data['guest_type']);
         $invitation->registeredGuests()->create($data);
-        return back()->with('success', 'Nama tamu berhasil didaftarkan untuk pemindaian otomatis.');
+        return back()->with('success', "Nama tamu berhasil didaftarkan dengan nomor kursi {$data['seat_number']}.");
     }
 
     public function invitation(Invitation $invitation): View

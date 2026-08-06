@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\EventSetting;
 use App\Models\InstitutionalGuest;
+use App\Models\Invitation;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -106,7 +108,8 @@ class ExampleTest extends TestCase
         $this->actingAs($user)->getJson('/barcode/'.$guest->code)
             ->assertOk()
             ->assertJsonPath('kind', 'institutional')
-            ->assertJsonPath('guest.full_name', 'Tamu LLDIKTI');
+            ->assertJsonPath('guest.full_name', 'Tamu LLDIKTI')
+            ->assertJsonPath('guest.seat_number', 'V1');
 
         $this->actingAs($user)->get('/tamu-institusi/'.$guest->id)
             ->assertOk()
@@ -125,5 +128,21 @@ class ExampleTest extends TestCase
         ])->assertSessionHas('success');
 
         $this->assertNotNull($guest->fresh()->checked_in_at);
+    }
+
+    public function test_seat_numbers_follow_each_guest_category_sequence(): void
+    {
+        $firstStudent = Student::create(['nim' => 'TEST-001', 'name' => 'Mahasiswa Pertama', 'faculty' => 'Fakultas A', 'study_program' => 'Prodi A']);
+        $firstInvitation = Invitation::create(['student_id' => $firstStudent->id, 'code' => 'TEST-INV-001', 'base_quota' => 2, 'extra_quota' => 1]);
+        $secondStudent = Student::create(['nim' => 'TEST-002', 'name' => 'Mahasiswa Kedua', 'faculty' => 'Fakultas B', 'study_program' => 'Prodi B']);
+        $secondInvitation = Invitation::create(['student_id' => $secondStudent->id, 'code' => 'TEST-INV-002', 'base_quota' => 2, 'extra_quota' => 1]);
+
+        $this->assertSame('1A', $firstInvitation->registeredGuests()->create(['full_name' => 'Orang Tua 1', 'guest_type' => 'orang_tua'])->seat_number);
+        $this->assertSame('1B', $firstInvitation->registeredGuests()->create(['full_name' => 'Orang Tua 2', 'guest_type' => 'orang_tua'])->seat_number);
+        $this->assertSame('2A', $secondInvitation->registeredGuests()->create(['full_name' => 'Orang Tua 3', 'guest_type' => 'wali'])->seat_number);
+        $this->assertSame('T1', $firstInvitation->registeredGuests()->create(['full_name' => 'Tambahan 1', 'guest_type' => 'tamu_tambahan'])->seat_number);
+        $this->assertSame('T2', $secondInvitation->registeredGuests()->create(['full_name' => 'Tambahan 2', 'guest_type' => 'tamu_tambahan'])->seat_number);
+        $this->assertSame('V1', InstitutionalGuest::create(['code' => 'TEST-INS-001', 'full_name' => 'VIP 1', 'institution' => 'Institusi A', 'category' => 'VIP'])->seat_number);
+        $this->assertSame('V2', InstitutionalGuest::create(['code' => 'TEST-INS-002', 'full_name' => 'VIP 2', 'institution' => 'Institusi B', 'category' => 'VIP'])->seat_number);
     }
 }

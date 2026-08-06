@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\EventSetting;
 use App\Models\InstitutionalGuest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,6 +30,34 @@ class ExampleTest extends TestCase
             ->assertRedirect('/');
 
         $this->get('/')->assertOk();
+    }
+
+    public function test_active_agenda_is_updated_across_dashboard_and_login_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->put('/agenda-aktif', [
+            'name' => 'Wisuda Periode Baru',
+            'period' => 'Periode III Tahun 2027',
+            'event_date' => '2027-01-15 09:30',
+            'venue' => 'Gedung Serbaguna USH',
+        ])->assertSessionHas('success');
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Wisuda Periode Baru')
+            ->assertSee('15 Januari 2027')
+            ->assertSee('Gedung Serbaguna USH');
+
+        auth()->logout();
+
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('Periode III Tahun 2027')
+            ->assertSee('15 Januari 2027')
+            ->assertSee('Gedung Serbaguna USH');
+
+        $this->assertSame(1, EventSetting::where('is_active', true)->count());
     }
 
     public function test_admin_can_export_guest_report_pdf(): void

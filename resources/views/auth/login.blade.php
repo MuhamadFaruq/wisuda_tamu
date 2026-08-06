@@ -13,7 +13,16 @@
         <section class="login-visual">
             <div class="login-brand"><img src="{{ asset('images/logo-ush.png') }}" alt="Logo Universitas Sugeng Hartono"><div><strong>SAPA</strong><small>Sistem Absensi Wisuda</small></div></div>
             <div class="login-message"><span class="hero-kicker">UNIVERSITAS SUGENG HARTONO</span><h1>Selamat datang<br>di <em>meja registrasi.</em></h1><p>Kelola kehadiran tamu wisuda dengan cepat, aman, dan tertib melalui satu sistem terpadu.</p></div>
-            <div class="login-event"><span>Wisuda Periode II</span><small>30 Juli 2026 · Auditorium USH</small></div>
+            <div class="login-event">
+                <span>{{ $activeAgenda?->period ?? 'Belum ada agenda aktif' }}</span>
+                <small>
+                    @if($activeAgenda)
+                        {{ $activeAgenda->event_date->translatedFormat('d F Y · H:i') }} · {{ $activeAgenda->venue }}
+                    @else
+                        Silakan atur agenda melalui dashboard admin
+                    @endif
+                </small>
+            </div>
         </section>
         <section class="login-form-wrap">
             <form class="login-form" method="post" action="{{ route('login.store') }}">@csrf

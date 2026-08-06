@@ -39,7 +39,13 @@
         <header class="topbar">
             <button class="icon-button menu-button" id="menuButton" aria-label="Buka menu">☰</button>
             <div><span class="eyebrow">UNIVERSITAS SUGENG HARTONO</span><h1>@yield('heading', 'Selamat datang, '.auth()->user()->name)</h1></div>
-            <div class="top-actions"><div class="date-pill"><small>Kamis</small><strong>30 Juli 2026</strong></div><button class="icon-button" aria-label="Notifikasi">♢<b></b></button></div>
+            <div class="top-actions">
+                <div class="date-pill">
+                    <small>{{ $activeAgenda?->event_date?->translatedFormat('l') ?? 'Agenda' }}</small>
+                    <strong>{{ $activeAgenda?->event_date?->translatedFormat('d F Y') ?? 'Belum diatur' }}</strong>
+                </div>
+                <button class="icon-button" aria-label="Notifikasi">♢<b></b></button>
+            </div>
         </header>
         <div class="content">
             @if(session('success'))<div class="toast success">✓ <span>{{ session('success') }}</span><button>×</button></div>@endif

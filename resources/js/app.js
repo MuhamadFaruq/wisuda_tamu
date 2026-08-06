@@ -35,24 +35,37 @@ const lookupGuest = async () => {
     message.textContent = 'Mencari data tamu...';
     message.className = 'lookup-message loading';
     try {
-        const response = await fetch(`/barcode/${encodeURIComponent(code)}`, {
+        const response = await fetch(`/qr-code/${encodeURIComponent(code)}`, {
             headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Data tamu tidak ditemukan.');
-        $('#registeredGuestId').value = data.kind === 'student' ? data.guest.id : '';
+        const guests = data.guests || [data.guest];
+        const batchInputs = $('#registeredGuestIds');
+        batchInputs.replaceChildren();
+        if (data.kind === 'student' && data.batch) {
+            guests.forEach(guest => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'registered_guest_ids[]';
+                input.value = guest.id;
+                batchInputs.append(input);
+            });
+        }
+        $('#registeredGuestId').value = data.kind === 'student' && !data.batch ? data.guest.id : '';
         $('#institutionalGuestId').value = data.kind === 'institutional' ? data.guest.id : '';
-        $('#guestNameInput').value = data.guest.full_name;
+        $('#guestNameInput').value = guests.map(guest => guest.full_name).join(' & ');
         $('#guestTypeInput').value = data.guest.guest_type;
         $('#guestTypeHidden').value = data.guest.guest_type;
-        $('#seatNumberInput').value = data.guest.seat_number || '';
+        $('#seatNumberInput').value = guests.map(guest => guest.seat_number).filter(Boolean).join(', ');
         message.textContent = data.kind === 'institutional'
             ? `${data.guest.full_name} · Kursi ${data.guest.seat_number} · ${data.position || data.category} · ${data.institution}`
-            : `${data.guest.full_name} · Kursi ${data.guest.seat_number} · Tamu ${data.student} · Kuota ${data.quota.used}/${data.quota.total}`;
+            : `${guests.map(guest => `${guest.full_name} (Kursi ${guest.seat_number})`).join(' & ')} · Tamu ${data.student} · Kuota ${data.quota.used}/${data.quota.total}`;
         message.className = 'lookup-message success';
         $('#guestNameInput').classList.add('auto-filled');
     } catch (error) {
         $('#registeredGuestId').value = '';
+        $('#registeredGuestIds').replaceChildren();
         $('#institutionalGuestId').value = '';
         $('#guestNameInput').value = '';
         $('#seatNumberInput').value = '';

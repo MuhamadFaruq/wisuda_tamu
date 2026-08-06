@@ -32,7 +32,7 @@ class InstitutionalGuestController extends Controller
         $data['seat_number'] = SeatNumber::forInstitutionalGuest();
         InstitutionalGuest::create($data);
 
-        return back()->with('success', "Tamu institusi dan barcode berhasil dibuat. Nomor kursi: {$data['seat_number']}.");
+        return back()->with('success', "Tamu institusi dan QR Code berhasil dibuat. Nomor kursi: {$data['seat_number']}.");
     }
 
     public function update(Request $request, InstitutionalGuest $institutionalGuest): RedirectResponse

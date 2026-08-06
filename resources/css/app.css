@@ -17,3 +17,4 @@
 .action-buttons{display:flex;align-items:center;gap:7px;white-space:nowrap}.detail-button{display:inline-flex;align-items:center;height:28px;padding:0 9px;border-radius:8px;background:var(--navy);color:#fff!important;font-size:9px;text-decoration:none!important}.institutional-panel .table-tools form{min-width:260px}
 @media(max-width:900px){.institution-invitation{grid-template-columns:1fr}}
 .sidebar{overflow-y:auto}.logout-button{width:auto!important;min-width:58px;padding:0 9px!important;display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:9px;font-weight:700;color:#fff!important;background:rgba(216,71,71,.18)!important;border:1px solid rgba(255,130,130,.18)!important}.logout-button:hover{background:rgba(216,71,71,.32)!important}.logout-button span{font-size:13px}
+.ticket-barcode svg{display:block;width:38mm;max-width:100%;height:auto;margin:0 auto;background:#fff}

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\GuestReportPdf;
 use App\Services\InvitationExcelReport;
-use App\Support\Code39;
+use App\Support\QrCodeGenerator;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -27,11 +27,11 @@ class ReportController extends Controller
         ]);
     }
 
-    public function barcodePng(string $code): Response
+    public function qrCodePng(string $code): Response
     {
-        return response(Code39::png($code), 200, [
+        return response(QrCodeGenerator::png($code), 200, [
             'Content-Type' => 'image/png',
-            'Content-Disposition' => 'attachment; filename="barcode-'.preg_replace('/[^A-Za-z0-9_-]/', '-', $code).'.png"',
+            'Content-Disposition' => 'attachment; filename="qr-code-'.preg_replace('/[^A-Za-z0-9_-]/', '-', $code).'.png"',
             'Cache-Control' => 'private, max-age=86400',
         ]);
     }

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\EventSetting;
 use App\Models\InstitutionalGuest;
 use App\Models\Invitation;
-use App\Support\Code39;
+use App\Support\QrCodeGenerator;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -31,7 +31,7 @@ class InvitationExcelReport
         $spreadsheet->getProperties()
             ->setCreator('Universitas Sugeng Hartono')
             ->setTitle('Laporan Data Undangan Wisuda')
-            ->setSubject('Data tamu dan barcode undangan');
+            ->setSubject('Data tamu dan QR Code undangan');
 
         $studentSheet = $spreadsheet->getActiveSheet();
         $studentSheet->setTitle('Undangan Mahasiswa');
@@ -49,7 +49,7 @@ class InvitationExcelReport
     private function fillStudentInvitations(Worksheet $sheet): void
     {
         $headers = [
-            'No.', 'Kode Barcode', 'Gambar Barcode', 'Link Download PNG',
+            'No.', 'Kode QR', 'Gambar QR Code', 'Link Download PNG',
             'Nama Mahasiswa', 'NIM', 'Fakultas', 'Program Studi',
             'Nama Lengkap Tamu', 'Jenis Tamu',
         ];
@@ -73,7 +73,7 @@ class InvitationExcelReport
                     $number++,
                     $invitation->code,
                     '',
-                    'Unduh barcode PNG',
+                    'Unduh QR Code PNG',
                     $invitation->student->name,
                     $invitation->student->nim,
                     $invitation->student->faculty,
@@ -82,7 +82,7 @@ class InvitationExcelReport
                     $this->guestTypeLabel($guest->guest_type),
                 ]], null, "A{$row}");
 
-                $this->addBarcode($sheet, $invitation->code, "C{$row}");
+                $this->addQrCode($sheet, $invitation->code, "C{$row}");
                 $this->addDownloadLink($sheet, $invitation->code, "D{$row}");
                 $this->styleDataRow($sheet, $row, count($headers));
                 $row++;
@@ -95,7 +95,7 @@ class InvitationExcelReport
     private function fillInstitutionalGuests(Worksheet $sheet): void
     {
         $headers = [
-            'No.', 'Kode Barcode', 'Gambar Barcode', 'Link Download PNG',
+            'No.', 'Kode QR', 'Gambar QR Code', 'Link Download PNG',
             'Nama Lengkap Tamu', 'Instansi', 'Jabatan', 'Kategori',
             'Jumlah Pendamping', 'Catatan',
         ];
@@ -107,7 +107,7 @@ class InvitationExcelReport
                 $index + 1,
                 $guest->code,
                 '',
-                'Unduh barcode PNG',
+                'Unduh QR Code PNG',
                 $guest->full_name,
                 $guest->institution,
                 $guest->position ?: '-',
@@ -116,7 +116,7 @@ class InvitationExcelReport
                 $guest->notes ?: '-',
             ]], null, "A{$row}");
 
-            $this->addBarcode($sheet, $guest->code, "C{$row}");
+            $this->addQrCode($sheet, $guest->code, "C{$row}");
             $this->addDownloadLink($sheet, $guest->code, "D{$row}");
             $this->styleDataRow($sheet, $row, count($headers));
             $row++;
@@ -185,16 +185,17 @@ class InvitationExcelReport
         $sheet->getPageMargins()->setTop(0.4)->setBottom(0.4)->setLeft(0.3)->setRight(0.3);
     }
 
-    private function addBarcode(Worksheet $sheet, string $code, string $coordinate): void
+    private function addQrCode(Worksheet $sheet, string $code, string $coordinate): void
     {
-        $image = Code39::image($code, 2, 48);
+        $image = QrCodeGenerator::image($code);
         $this->images[] = $image;
 
         $drawing = new MemoryDrawing;
-        $drawing->setName("Barcode {$code}");
+        $drawing->setName("QR Code {$code}");
         $drawing->setImageResource($image);
         $drawing->setRenderingFunction(MemoryDrawing::RENDERING_PNG);
         $drawing->setMimeType(MemoryDrawing::MIMETYPE_PNG);
+        $drawing->setWidth(116);
         $drawing->setHeight(58);
         $drawing->setCoordinates($coordinate);
         $drawing->setOffsetX(8);
@@ -204,7 +205,7 @@ class InvitationExcelReport
 
     private function addDownloadLink(Worksheet $sheet, string $code, string $coordinate): void
     {
-        $sheet->getCell($coordinate)->getHyperlink()->setUrl(route('barcodes.png', ['code' => $code]));
+        $sheet->getCell($coordinate)->getHyperlink()->setUrl(route('qrcodes.png', ['code' => $code]));
         $sheet->getStyle($coordinate)->getFont()
             ->setColor(new Color(self::NAVY))
             ->setUnderline(true);

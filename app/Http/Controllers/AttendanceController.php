@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Support\SeatNumber;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AttendanceController extends Controller
@@ -57,7 +58,7 @@ class AttendanceController extends Controller
             'code' => 'USH-'.now()->format('y').'-'.strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $data['nim']), -6)),
             'base_quota' => 2, 'extra_quota' => $data['extra_quota'] ?? 0, 'package_name' => $data['package_name'] ?? null,
         ]);
-        return back()->with('success', 'Undangan dan barcode berhasil dibuat.');
+        return back()->with('success', 'Undangan dan QR Code berhasil dibuat.');
     }
 
     public function addPackage(Request $request, Invitation $invitation): RedirectResponse
@@ -90,17 +91,61 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request): RedirectResponse
     {
-        $data = $request->validate(['code' => ['required','string'], 'registered_guest_id' => ['nullable','integer'], 'institutional_guest_id' => ['nullable','integer'], 'guest_name' => ['required','string','max:120'], 'guest_type' => ['required','string','max:60']]);
+        $data = $request->validate([
+            'code' => ['required', 'string'],
+            'registered_guest_id' => ['nullable', 'integer'],
+            'registered_guest_ids' => ['nullable', 'array', 'min:1', 'max:2'],
+            'registered_guest_ids.*' => ['integer', 'distinct'],
+            'institutional_guest_id' => ['nullable', 'integer'],
+            'guest_name' => ['required', 'string', 'max:255'],
+            'guest_type' => ['required', 'string', 'max:60'],
+        ]);
         if (! empty($data['institutional_guest_id'])) {
             $guest = InstitutionalGuest::where('code', strtoupper(trim($data['code'])))->find($data['institutional_guest_id']);
-            if (! $guest) return back()->withErrors(['code' => 'Barcode tamu institusi tidak valid.'])->withInput();
+            if (! $guest) return back()->withErrors(['code' => 'QR Code tamu institusi tidak valid.'])->withInput();
             if ($guest->checked_in_at) return back()->withErrors(['code' => 'Tamu institusi ini sudah melakukan check-in.'])->withInput();
             $guest->update(['checked_in_at' => now(), 'gate' => 'Pintu Utama']);
             return back()->with('success', "Check-in {$guest->full_name} dari {$guest->institution} berhasil. Nomor kursi: {$guest->seat_number}.");
         }
         $invitation = Invitation::where('code', strtoupper(trim($data['code'])))->first();
-        if (! $invitation) return back()->withErrors(['code' => 'Barcode tidak terdaftar.'])->withInput();
+        if (! $invitation) return back()->withErrors(['code' => 'QR Code tidak terdaftar.'])->withInput();
         if ($invitation->attendances()->count() >= $invitation->total_quota) return back()->withErrors(['code' => 'Kuota undangan sudah penuh.'])->withInput();
+
+        if (! empty($data['registered_guest_ids'])) {
+            $guests = RegisteredGuest::where('invitation_id', $invitation->id)
+                ->whereNull('attended_at')
+                ->whereIn('guest_type', ['orang_tua', 'wali'])
+                ->whereIn('id', $data['registered_guest_ids'])
+                ->orderBy('id')
+                ->get();
+
+            if ($guests->count() !== count($data['registered_guest_ids'])) {
+                return back()->withErrors(['code' => 'Data tamu kuota dasar tidak valid atau sudah check-in.'])->withInput();
+            }
+            if ($invitation->attendances()->count() + $guests->count() > $invitation->total_quota) {
+                return back()->withErrors(['code' => 'Sisa kuota tidak cukup untuk check-in bersama.'])->withInput();
+            }
+
+            $checkedInAt = now();
+            DB::transaction(function () use ($guests, $invitation, $checkedInAt): void {
+                foreach ($guests as $guest) {
+                    $guest->update(['attended_at' => $checkedInAt]);
+                    $invitation->attendances()->create([
+                        'registered_guest_id' => $guest->id,
+                        'guest_name' => $guest->full_name,
+                        'guest_type' => $guest->guest_type,
+                        'checked_in_at' => $checkedInAt,
+                        'gate' => 'Pintu Utama',
+                    ]);
+                }
+            });
+
+            $names = $guests->pluck('full_name')->join(' dan ');
+            $seats = $guests->pluck('seat_number')->join(', ');
+
+            return back()->with('success', "Check-in {$names} berhasil. Nomor kursi: {$seats}.");
+        }
+
         if ($data['guest_type'] === 'tamu_tambahan' && $invitation->extra_quota < 1) return back()->withErrors(['code' => 'Undangan ini tidak memiliki paket tambahan.'])->withInput();
         $registeredGuest = isset($data['registered_guest_id'])
             ? RegisteredGuest::where('invitation_id', $invitation->id)->whereNull('attended_at')->find($data['registered_guest_id'])
@@ -130,15 +175,31 @@ class AttendanceController extends Controller
         }
 
         $invitation = Invitation::with('student')->where('code', $normalizedCode)->first();
-        if (! $invitation) return response()->json(['message' => 'Barcode tidak terdaftar.'], 404);
+        if (! $invitation) return response()->json(['message' => 'QR Code tidak terdaftar.'], 404);
         if ($invitation->attendances()->count() >= $invitation->total_quota) return response()->json(['message' => 'Kuota undangan sudah penuh.'], 422);
 
-        $guest = $invitation->registeredGuests()->whereNull('attended_at')->oldest()->first();
+        $baseGuests = $invitation->registeredGuests()
+            ->whereNull('attended_at')
+            ->whereIn('guest_type', ['orang_tua', 'wali'])
+            ->oldest()
+            ->limit(2)
+            ->get();
+        $guest = $baseGuests->first() ?? $invitation->registeredGuests()->whereNull('attended_at')->oldest()->first();
         if (! $guest) return response()->json(['message' => 'Belum ada tamu tersisa yang terdaftar pada undangan ini.'], 422);
+
+        $guests = $baseGuests->isNotEmpty() ? $baseGuests : collect([$guest]);
+        $guestData = $guests->map(fn (RegisteredGuest $registeredGuest) => [
+            'id' => $registeredGuest->id,
+            'full_name' => $registeredGuest->full_name,
+            'guest_type' => $registeredGuest->guest_type,
+            'seat_number' => $registeredGuest->seat_number,
+        ])->values();
 
         return response()->json([
             'kind' => 'student',
-            'guest' => ['id' => $guest->id, 'full_name' => $guest->full_name, 'guest_type' => $guest->guest_type, 'seat_number' => $guest->seat_number],
+            'batch' => $baseGuests->isNotEmpty(),
+            'guest' => $guestData->first(),
+            'guests' => $guestData,
             'student' => $invitation->student->name,
             'quota' => ['used' => $invitation->attendances()->count(), 'total' => $invitation->total_quota],
         ]);

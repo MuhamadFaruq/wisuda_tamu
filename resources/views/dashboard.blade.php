@@ -2,8 +2,8 @@
 
 @section('content')
 <section class="hero">
-    <div><span class="hero-kicker">PUSAT KENDALI REGISTRASI</span><h2>Kelola tamu wisuda<br><em>lebih cepat & tertib.</em></h2><p>Pindai barcode undangan, validasi kuota, dan pantau kehadiran secara langsung dari satu tempat.</p></div>
-    <button class="btn btn-gold" data-modal="scanModal">⌗ <span>Pindai barcode</span></button>
+    <div><span class="hero-kicker">PUSAT KENDALI REGISTRASI</span><h2>Kelola tamu wisuda<br><em>lebih cepat & tertib.</em></h2><p>Pindai QR Code undangan, validasi kuota, dan pantau kehadiran secara langsung dari satu tempat.</p></div>
+    <button class="btn btn-gold" data-modal="scanModal">▣ <span>Pindai QR Code</span></button>
 </section>
 
 <section class="stats-grid">
@@ -20,14 +20,14 @@
 
 <section class="workspace-grid" id="scanner">
     <article class="panel scan-panel">
-        <div class="panel-heading"><div><span class="eyebrow">CHECK-IN CEPAT</span><h3>Pindai barcode undangan</h3></div><span class="status"><i></i> Scanner siap</span></div>
+        <div class="panel-heading"><div><span class="eyebrow">CHECK-IN CEPAT</span><h3>Pindai QR Code undangan</h3></div><span class="status"><i></i> Scanner siap</span></div>
         <button class="scan-zone" data-modal="scanModal">
             <span class="scan-corners"><i></i></span>
-            <span class="scan-icon">⌗</span>
-            <strong>Siapkan scanner barcode garis</strong>
-            <small>Klik di sini, lalu pindai barcode menggunakan alat scanner USB</small>
+            <span class="scan-icon">▣</span>
+            <strong>Siapkan scanner QR Code</strong>
+            <small>Klik di sini, lalu pindai QR Code menggunakan scanner 2D</small>
         </button>
-        <div class="scan-help"><span>⌨</span><p><strong>Scanner USB siap digunakan</strong><br><small>Scanner akan membaca kode seperti keyboard dan menekan Enter otomatis.</small></p><button data-modal="scanModal">Mulai scan</button></div>
+        <div class="scan-help"><span>⌨</span><p><strong>Scanner QR USB 2D siap digunakan</strong><br><small>Scanner akan membaca kode seperti keyboard dan menekan Enter otomatis.</small></p><button data-modal="scanModal">Mulai scan</button></div>
     </article>
     <article class="panel" id="kehadiran">
         <div class="panel-heading"><div><span class="eyebrow">AKTIVITAS TERKINI</span><h3>Tamu baru hadir</h3></div><a href="#undangan">Lihat semua →</a></div>
@@ -42,7 +42,7 @@
 <section class="panel invitations institutional-panel" id="tamu-institusi">
     <div class="panel-heading table-head"><div><span class="eyebrow">UNDANGAN KHUSUS</span><h3>Tamu institusi & VIP</h3></div><div class="table-tools"><form action="{{ route('dashboard') }}#tamu-institusi"><input name="qi" value="{{ $institutionSearch }}" placeholder="Cari nama, instansi, jabatan, kategori..."><button aria-label="Cari tamu institusi">⌕</button></form>@if($institutionSearch)<a class="btn btn-outline" href="{{ route('dashboard') }}#tamu-institusi">Reset</a>@endif<button class="btn btn-navy" data-modal="institutionModal">＋ Tambah tamu institusi</button></div></div>
     <div class="table-wrap"><table>
-        <thead><tr><th>Nama tamu</th><th>Instansi / Jabatan</th><th>Kategori</th><th>Barcode</th><th>Pendamping</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Nama tamu</th><th>Instansi / Jabatan</th><th>Kategori</th><th>Kode QR</th><th>Pendamping</th><th>Status</th><th></th></tr></thead>
         <tbody>@forelse($institutionalGuests as $guest)
             <tr>
                 <td><strong>{{ $guest->full_name }}</strong><small>{{ $guest->phone ?: 'Nomor telepon belum diisi' }}</small></td>
@@ -58,7 +58,7 @@
 </section>
 
 <section class="panel invitations" id="undangan">
-    <div class="panel-heading table-head"><div><span class="eyebrow">MANAJEMEN UNDANGAN</span><h3>Daftar mahasiswa & kuota tamu</h3></div><div class="table-tools"><form><input name="q" value="{{ request('q') }}" placeholder="Cari nama, NIM, atau kode..."><button>⌕</button></form><a class="btn btn-outline" href="{{ route('reports.guests.pdf') }}">⇩ Export PDF</a><a class="btn btn-outline" href="{{ route('reports.invitations.xlsx') }}">⇩ Export Excel + Barcode</a><button class="btn btn-navy" data-modal="newModal">＋ Tambah undangan</button></div></div>
+    <div class="panel-heading table-head"><div><span class="eyebrow">MANAJEMEN UNDANGAN</span><h3>Daftar mahasiswa & kuota tamu</h3></div><div class="table-tools"><form><input name="q" value="{{ request('q') }}" placeholder="Cari nama, NIM, atau kode..."><button>⌕</button></form><a class="btn btn-outline" href="{{ route('reports.guests.pdf') }}">⇩ Export PDF</a><a class="btn btn-outline" href="{{ route('reports.invitations.xlsx') }}">⇩ Export Excel + QR Code</a><button class="btn btn-navy" data-modal="newModal">＋ Tambah undangan</button></div></div>
     <div class="table-wrap"><table>
         <thead><tr><th>Mahasiswa</th><th>Program studi</th><th>Kode undangan</th><th>Kuota</th><th>Kehadiran</th><th></th></tr></thead>
         <tbody>@forelse($invitations as $invitation)
@@ -76,16 +76,17 @@
 
 @section('modals')
 <dialog id="scanModal" class="modal"><form method="post" action="{{ route('checkin') }}">@csrf
-    <div class="modal-head"><div><span class="eyebrow">REGISTRASI TAMU</span><h3>Scanner barcode garis</h3></div><button type="button" class="modal-close">×</button></div>
-    <div class="hardware-scanner"><span class="scanner-beam"></span><div class="scan-device">⌗</div><div><strong>Alat scanner siap</strong><small>Hubungkan scanner USB, klik kolom kode, lalu pindai barcode.</small></div><i id="scannerStatus">MENUNGGU SCAN</i></div>
-    <label>Kode undangan<input id="barcodeInput" class="barcode-field" name="code" value="{{ old('code') }}" placeholder="Klik di sini lalu scan barcode" autocomplete="off" autofocus required></label>
+    <div class="modal-head"><div><span class="eyebrow">REGISTRASI TAMU</span><h3>Scanner QR Code</h3></div><button type="button" class="modal-close">×</button></div>
+    <div class="hardware-scanner"><span class="scanner-beam"></span><div class="scan-device">▣</div><div><strong>Scanner QR siap</strong><small>Hubungkan scanner QR 2D, klik kolom kode, lalu pindai QR Code.</small></div><i id="scannerStatus">MENUNGGU SCAN</i></div>
+    <label>Kode undangan<input id="barcodeInput" class="barcode-field" name="code" value="{{ old('code') }}" placeholder="Klik di sini lalu scan QR Code" autocomplete="off" autofocus required></label>
     <small class="field-hint">Kode akan terisi otomatis. Tekan Enter untuk lanjut jika alat tidak mengirim Enter.</small>
     <input type="hidden" id="registeredGuestId" name="registered_guest_id">
+    <div id="registeredGuestIds"></div>
     <input type="hidden" id="institutionalGuestId" name="institutional_guest_id">
-    <div id="guestLookupMessage" class="lookup-message">Nama dan jenis tamu akan muncul otomatis setelah barcode terbaca.</div>
-    <div class="form-grid"><label>Nama tamu<input id="guestNameInput" name="guest_name" value="{{ old('guest_name') }}" placeholder="Otomatis dari barcode" readonly required></label><label>Nomor kursi<input id="seatNumberInput" placeholder="Otomatis dari barcode" readonly></label></div>
+    <div id="guestLookupMessage" class="lookup-message">Nama, jenis tamu, dan nomor kursi akan muncul setelah QR Code terbaca.</div>
+    <div class="form-grid"><label>Nama tamu<input id="guestNameInput" name="guest_name" value="{{ old('guest_name') }}" placeholder="Otomatis dari QR Code" readonly required></label><label>Nomor kursi<input id="seatNumberInput" placeholder="Otomatis dari QR Code" readonly></label></div>
     <label>Jenis tamu<select id="guestTypeInput" name="guest_type" disabled><option value="orang_tua">Orang tua</option><option value="wali">Wali</option><option value="tamu_tambahan">Tamu tambahan</option><option value="tamu_institusi">Tamu institusi</option></select><input type="hidden" id="guestTypeHidden" name="guest_type"></label>
-    <button class="btn btn-gold full">Konfirmasi check-in →</button>
+    <button class="btn btn-gold full">Konfirmasi check-in tamu yang tampil →</button>
 </form></dialog>
 
 <dialog id="newModal" class="modal"><form method="post" action="{{ route('invitations.store') }}">@csrf
@@ -95,7 +96,7 @@
     <label>Program studi<input name="study_program" required placeholder="Ilmu Komputer"></label>
     <div class="package-box"><div><strong>Kuota dasar</strong><small>Maksimal 2 orang tua/wali</small></div><b>2 orang</b></div>
     <div class="form-grid"><label>Kuota tambahan<input type="number" name="extra_quota" min="0" max="8" value="0"></label><label>Nama paket<input name="package_name" placeholder="Opsional"></label></div>
-    <button class="btn btn-gold full">Buat undangan & barcode →</button>
+    <button class="btn btn-gold full">Buat undangan & QR Code →</button>
 </form></dialog>
 
 <dialog id="institutionModal" class="modal"><form method="post" action="{{ route('institutional-guests.store') }}">@csrf
@@ -104,7 +105,7 @@
     <div class="form-grid"><label>Jabatan<input name="position" placeholder="Contoh: Kepala LLDIKTI"></label><label>Kategori<select name="category"><option>LLDIKTI</option><option>Yayasan</option><option>Pejabat Pemerintah</option><option>Mitra Universitas</option><option>Pimpinan Perguruan Tinggi</option><option>VIP/VVIP</option><option>Media</option><option>Tamu Institusi Lainnya</option></select></label></div>
     <div class="form-grid"><label>Nomor telepon<input name="phone" placeholder="Opsional"></label><label>Jumlah pendamping<input type="number" name="companions" min="0" max="10" value="0"></label></div>
     <label>Catatan protokoler<textarea name="notes" rows="3" placeholder="Contoh: Kursi baris depan, penyambutan khusus"></textarea></label>
-    <button class="btn btn-gold full">Buat undangan & barcode →</button>
+    <button class="btn btn-gold full">Buat undangan & QR Code →</button>
 </form></dialog>
 
 @endsection

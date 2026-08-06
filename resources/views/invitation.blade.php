@@ -9,7 +9,7 @@
         <div class="ticket-body"><p>Dengan hormat mengundang orang tua/wali dari</p><h3>{{ $invitation->student->name }}</h3><span>{{ $invitation->student->nim }} · {{ $invitation->student->study_program }}</span>
             <div class="event-info"><div><small>Hari & tanggal</small><strong>{{ $activeAgenda?->event_date?->translatedFormat('l, d F Y · H:i') ?? 'Kamis, 30 Juli 2026' }}</strong></div><div><small>Tempat</small><strong>{{ $activeAgenda?->venue ?? 'Auditorium USH' }}</strong></div><div><small>Kuota tamu</small><strong>{{ $invitation->total_quota }} orang</strong></div></div>
         </div>
-        <div class="ticket-barcode">{!! \App\Support\Code39::svg($invitation->code, 76) !!}<p>Tunjukkan barcode ini kepada petugas registrasi</p></div>
+        <div class="ticket-barcode">{!! \App\Support\QrCodeGenerator::svg($invitation->code) !!}<p>Tunjukkan QR Code ini kepada petugas registrasi</p></div>
     </div>
     <aside class="detail-panel"><span class="eyebrow">STATUS UNDANGAN</span><h3>{{ $invitation->attendances->count() }} dari {{ $invitation->total_quota }} hadir</h3><div class="progress"><i style="width:{{ min(100,$invitation->total_quota ? $invitation->attendances->count()/$invitation->total_quota*100 : 0) }}%"></i></div>
         <ul>@foreach($invitation->attendances as $attendance)<li><span>✓</span><div><strong>{{ $attendance->guest_name }}</strong><small>{{ str_replace('_',' ',$attendance->guest_type) }} · {{ $attendance->checked_in_at->format('H:i') }}</small></div></li>@endforeach</ul>
@@ -17,7 +17,7 @@
             <h4>Daftar tamu untuk scan otomatis</h4>
             @forelse($invitation->registeredGuests as $guest)
                 <div class="roster-row"><span class="{{ $guest->attended_at ? 'done' : '' }}">{{ $guest->attended_at ? '✓' : '○' }}</span><div><strong>{{ $guest->full_name }}</strong><small>{{ ucwords(str_replace('_',' ',$guest->guest_type)) }} · {{ $guest->attended_at ? 'Sudah hadir' : 'Belum hadir' }}</small></div></div>
-            @empty <p class="roster-empty">Belum ada nama tamu. Daftarkan agar nama dan jenis muncul otomatis saat barcode dipindai.</p> @endforelse
+            @empty <p class="roster-empty">Belum ada nama tamu. Daftarkan agar nama dan jenis muncul otomatis saat QR Code dipindai.</p> @endforelse
             @if($invitation->registeredGuests->count() < $invitation->total_quota)
             <form method="post" action="{{ route('invitations.guests.store',$invitation) }}">@csrf
                 <label>Nama lengkap tamu<input name="full_name" placeholder="Nama sesuai identitas" required></label>

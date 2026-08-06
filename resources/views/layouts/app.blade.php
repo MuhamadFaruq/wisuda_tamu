@@ -17,7 +17,7 @@
         </a>
         <nav>
             <a class="{{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}"><span>⌂</span> Ringkasan</a>
-            <a href="{{ route('dashboard') }}#scanner"><span>⌗</span> Pindai Barcode</a>
+            <a href="{{ route('dashboard') }}#scanner"><span>▣</span> Pindai QR Code</a>
             <a href="{{ route('dashboard') }}#undangan"><span>♧</span> Data Undangan</a>
             <a href="{{ route('dashboard') }}#tamu-institusi"><span>☆</span> Tamu Institusi</a>
             <a href="{{ route('dashboard') }}#kehadiran"><span>✓</span> Kehadiran</a>

@@ -42,17 +42,18 @@
 <section class="panel invitations institutional-panel" id="tamu-institusi">
     <div class="panel-heading table-head"><div><span class="eyebrow">UNDANGAN KHUSUS</span><h3>Tamu institusi & VIP</h3></div><div class="table-tools"><form action="{{ route('dashboard') }}#tamu-institusi"><input name="qi" value="{{ $institutionSearch }}" placeholder="Cari nama, instansi, jabatan, kategori..."><button aria-label="Cari tamu institusi">⌕</button></form>@if($institutionSearch)<a class="btn btn-outline" href="{{ route('dashboard') }}#tamu-institusi">Reset</a>@endif<button class="btn btn-navy" data-modal="institutionModal">＋ Tambah tamu institusi</button></div></div>
     <div class="table-wrap"><table>
-        <thead><tr><th>Nama tamu</th><th>Instansi / Jabatan</th><th>Kategori</th><th>Kode QR</th><th>Pendamping</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Nama tamu</th><th>Instansi / Jabatan</th><th>Kategori</th><th>Kursi</th><th>Kode QR</th><th>Pendamping</th><th>Status</th><th></th></tr></thead>
         <tbody>@forelse($institutionalGuests as $guest)
             <tr>
                 <td><strong>{{ $guest->full_name }}</strong><small>{{ $guest->phone ?: 'Nomor telepon belum diisi' }}</small></td>
                 <td><strong>{{ $guest->institution }}</strong><small>{{ $guest->position ?: '-' }}</small></td>
                 <td><span class="institution-badge">{{ $guest->category }}</span></td>
+                <td><strong>{{ $guest->seat_number ?: '-' }}</strong></td>
                 <td><code>{{ $guest->code }}</code></td><td><strong>{{ $guest->companions }} orang</strong></td>
                 <td><span class="quota {{ $guest->checked_in_at ? 'full' : '' }}">{{ $guest->checked_in_at ? 'Hadir '.$guest->checked_in_at->format('H:i') : 'Belum hadir' }}</span></td>
                 <td><a class="detail-button" href="{{ route('institutional-guests.show',$guest) }}">Detail →</a></td>
             </tr>
-        @empty <tr><td colspan="7" class="empty">{{ $institutionSearch ? 'Tamu institusi tidak ditemukan.' : 'Belum ada tamu institusi.' }}</td></tr> @endforelse</tbody>
+        @empty <tr><td colspan="8" class="empty">{{ $institutionSearch ? 'Tamu institusi tidak ditemukan.' : 'Belum ada tamu institusi.' }}</td></tr> @endforelse</tbody>
     </table></div>
     <div class="pagination">{{ $institutionalGuests->links() }}</div>
 </section>

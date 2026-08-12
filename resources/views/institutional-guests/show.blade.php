@@ -16,7 +16,7 @@
     </div>
     <aside class="detail-panel"><span class="eyebrow">STATUS KEHADIRAN</span><h3>{{ $institutionalGuest->checked_in_at ? 'Sudah hadir' : 'Menunggu kehadiran' }}</h3>
         <div class="institution-status {{ $institutionalGuest->checked_in_at ? 'present' : '' }}">{{ $institutionalGuest->checked_in_at ? 'Check-in '.$institutionalGuest->checked_in_at->format('d/m/Y H:i').' · '.$institutionalGuest->gate : 'QR Code belum digunakan' }}</div>
-        <dl><dt>Kode undangan</dt><dd>{{ $institutionalGuest->code }}</dd><dt>Kategori</dt><dd>{{ $institutionalGuest->category }}</dd><dt>Catatan protokoler</dt><dd>{{ $institutionalGuest->notes ?: '-' }}</dd></dl>
+        <dl><dt>Kode undangan</dt><dd>{{ $institutionalGuest->code }}</dd><dt>Kategori</dt><dd>{{ $institutionalGuest->category }}</dd><dt>Nomor kursi</dt><dd>{{ $institutionalGuest->seat_number ?: '-' }}</dd><dt>Catatan protokoler</dt><dd>{{ $institutionalGuest->notes ?: '-' }}</dd></dl>
         <button class="btn btn-gold full" data-modal="editInstitutionDetail">✎ Update data</button>
     </aside>
 </section>
